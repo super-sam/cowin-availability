@@ -32,7 +32,6 @@ class Settings:
 
 def geturi(by='district'):
     s = Settings.get()
-    print(s.check)
     if by == 'district':
         return 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id={id}&date={date}'
 
