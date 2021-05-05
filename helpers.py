@@ -40,7 +40,7 @@ def geturi(by='district'):
 
 def find_vaccines(date, id, by='district'):
     uri = geturi(by)
-    url = uri.format(date=date, id=id)
+    url = uri.format(date=date, id=str(id))
     results = []
     http = urllib3.PoolManager()
 
