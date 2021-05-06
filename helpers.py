@@ -4,32 +4,6 @@ import urllib3
 from enum import Enum
 
 
-class AGE_GROUP(Enum):
-    BOTH = "session['min_age_limit'] >= 18"
-    YOUNG = "session['min_age_limit'] == 18"
-    OLD = "session['min_age_limit'] == 45"
-
-
-class Settings:
-    __instance = None
-
-    @staticmethod
-    def get():
-        if Settings.__instance is None:
-            Settings()
-        return Settings.__instance
-
-    def __init__(self, check=''):
-        if Settings.__instance is not None:
-            raise Exception("This class is a singleton!")
-        else:
-            if check in [AGE_GROUP.BOTH, AGE_GROUP.YOUNG, AGE_GROUP.OLD]:
-                self.check = check.value
-            else:
-                self.check = AGE_GROUP.BOTH.value
-            Settings.__instance = self
-
-
 def geturi(by='district'):
     s = Settings.get()
     if by == 'district':
@@ -38,7 +12,7 @@ def geturi(by='district'):
     return 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode={id}&date={date}'
 
 
-def find_vaccines(date, id, by='district'):
+def find_vaccines(date, id,age_group=['18', '45'], by='district'):
     uri = geturi(by)
     url = uri.format(date=date, id=str(id))
     results = []
@@ -55,8 +29,7 @@ def find_vaccines(date, id, by='district'):
         centers = jsonData['centers']
         for center in centers:
             for session in center['sessions']:
-                expression = Settings.get().check
-                if session['available_capacity'] > 0 and eval(expression):
+                if session['available_capacity'] > 0 and str(session['min_age_limit']) in age_group:
                     r = "{count} {hospital} {city} {date} {age}".format(
                         count=session['available_capacity'],
                         city=center['district_name'][:3],
@@ -78,11 +51,11 @@ def find_vaccines(date, id, by='district'):
     return results
 
 
-def find_monthly_vaccine(id, by):
+def find_monthly_vaccine(id, by, age_group=['18', '45']):
     today = datetime.today()
     results = []
     for _ in range(4):
-        results.extend(find_vaccines(today.strftime('%d-%m-%Y'), id, by))
+        results.extend(find_vaccines(today.strftime('%d-%m-%Y'), id, age_group, by))
         today = today + timedelta(days=7)
     return results
 
