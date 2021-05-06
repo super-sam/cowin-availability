@@ -112,3 +112,32 @@ def send_sms(results):
                 }
             )
             start = end
+def send_telegram(results):
+    '''
+    Send Message to Telegram channel
+    Steps:
+    1) Create a bot with telegram bot father: https://t.me/botfather to get bot api token
+    2) Create a channel
+    3) Add the bot as admin to the channel
+    '''
+    channel_id = '<YOUR_CHANNEL_ID>'
+    api_token = '<YOUR_BOT_API_TOKEN'
+    
+
+    if len(results) > 0:
+        http = urllib3.PoolManager()
+        start = 0
+        while start < len(results) - 1:
+            diff = len(results) - start
+            end = start + diff if diff <= 20 else start + 20
+            message = '\n'.join(results[start:end])
+            url = f"https://api.telegram.org/bot{api_token}/sendMessage?chat_id=@{channel_id}&text={message}"
+            fields = {
+                "chatid": f"@{channel_id}",
+                "text": message
+            }
+            try:
+                http.request('POST', url, headers={'Content-Type': 'application/x-www-form-urlencoded'}, fields=fields)
+            except Exception as e:
+                print(str(e))
+            start = end
